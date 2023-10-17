@@ -11,7 +11,7 @@ async def connect_and_init_db():
         db_client = AsyncIOMotorClient(mongo_url)
         print("Successful connection")
     except Exception as ex:
-        print("Cant connection {}")
+        print(f"Cant connection {ex}")
 
 
 async def close_connect():
