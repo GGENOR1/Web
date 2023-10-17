@@ -4,6 +4,11 @@ from motor.motor_asyncio import AsyncIOMotorClient
 db_client: AsyncIOMotorClient = None
 
 
+async def get_db_collections() -> AsyncIOMotorClient:
+    db_name = "your_database2"
+    collections = "your_collection2"
+    return db_client[db_name][collections]
+
 async def connect_and_init_db():
     global db_client
     mongo_url = "mongodb://localhost:27017/"
