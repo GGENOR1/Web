@@ -6,6 +6,9 @@ class Users(BaseModel):
     creationDate: str
 
 
+class UpdateUserModel(BaseModel):
+    CreationDate: str
+
 # Класс-сервис для работы с MongoDB
 # class MessageService:
 #     def __init__(self, client, database_name, collection_name):

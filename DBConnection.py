@@ -1,10 +1,10 @@
 import motor
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
 
 db_client: AsyncIOMotorClient = None
 
 
-async def get_db_collections() -> AsyncIOMotorClient:
+async def get_db_collections() -> AsyncIOMotorCollection:
     db_name = "your_database2"
     collections = "your_collection2"
     return db_client[db_name][collections]
