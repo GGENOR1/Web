@@ -11,7 +11,7 @@ app = FastAPI()
 # url = "mongodb://localhost:27017"
 # client = MongoClient(url)
 
-app.include_router(router, tags=["Message"], prefix="/message")
+app.include_router(router, tags=["Message"], prefix="/user")
 app.add_event_handler("startup", connect_and_init_db )
 app.add_event_handler("shutdown", close_connect )
 
