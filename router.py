@@ -43,8 +43,10 @@ async def get_by_id(user_id: str, repository: UserRepository = Depends(UserRepos
 
 @router.post("/")
 async def add_user(user: UpdateUserModel,
-                   repository: UserRepository = Depends(UserRepository.get_instance)) -> str:
+                   repository: UserRepository = Depends(UserRepository.get_instance),
+                   search_repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)) -> str:
     user_id = await repository.create(user)
+    await search_repository.create(user_id, user)
     return user_id
 
 

@@ -3,12 +3,20 @@ from pydantic import BaseModel
 
 class Users(BaseModel):
     id: str
-
-    creationDate: str
+    Reputation: str
+    DisplayName: str
+    CreationDate: str
+    LastAccessDate:str
+    # accountId: str
 
 
 class UpdateUserModel(BaseModel):
+    Reputation: str
+    DisplayName: str
     CreationDate: str
+    LastAccessDate:str
+
+
 
 # Класс-сервис для работы с MongoDB
 # class MessageService:

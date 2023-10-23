@@ -5,8 +5,8 @@ db_client: AsyncIOMotorClient = None
 
 
 async def get_db_collections() -> AsyncIOMotorCollection:
-    db_name = "your_database2"
-    collections = "your_collection2"
+    db_name = "User"
+    collections = "UserCollections"
     return db_client[db_name][collections]
 
 async def connect_and_init_db():
