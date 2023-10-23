@@ -51,12 +51,16 @@ async def add_user(user: UpdateUserModel,
 
 
 @router.put("/{user_id}", response_model=Users)
-async def update_user(user_id: str, user: UpdateUserModel, repository: UserRepository = Depends(UserRepository.get_instance)) -> Any:
+async def update_user(user_id: str, user: UpdateUserModel,
+                      repository: UserRepository = Depends(UserRepository.get_instance),
+                      search_repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)
+                      ) -> Any:
     if not ObjectId.is_valid(user_id):
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
     db_user = await repository.update(user_id, user)
     if db_user is None:
         return Response(status_code=status.HTTP_404_NOT_FOUND)
+    await search_repository.update(user_id, user)
     return db_user
 
 

@@ -18,8 +18,9 @@ class UserSearchRepository:
 
     async def update(self, user_id: str, user: UpdateUserModel):
         await self._elasticsearch_client.update(index=self._elasticsearch_index, id=user_id, doc=dict(user))
+
     async def delete(self, user_id: str):
-        await (self._elasticsearch_client.delete(index=self._elasticsearch_index, id=user_id)
+        await (self._elasticsearch_client.delete(index=self._elasticsearch_index, id=user_id))
 
     async def get_by_name(self, date: str) -> list[Users]:
         query = {
