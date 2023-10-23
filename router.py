@@ -3,30 +3,31 @@ from typing import Any
 from bson import ObjectId
 from fastapi import APIRouter, Depends, status
 from fastapi.openapi.models import Response
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
-from pydantic import BaseModel
-from pymongo import MongoClient
-
-from DBConnection import db_client, get_db_collections
 from UserRepository import UserRepository
+from User_Search_elastic import UserSearchRepository
 from massenges import Users, UpdateUserModel
 
 router = APIRouter()
 message: list[Users] = []
 
 
-def map_user(user: Any) -> Users:
-    return Users(id=str(user["_id"]), creationDate=str(user['CreationDate']))
-
-
-def get_filter(id: str) -> dict:
-    return {'_id': ObjectId(id)}
+# def map_user(user: Any) -> Users:
+#     return Users(id=str(user["_id"]),if(creationDate=str(user['CreationDate']))is None)
+#
+#
+# def get_filter(id: str) -> dict:
+#     return {'_id': ObjectId(id)}
 
 
 # вывод всех пользователей
 @router.get("/")
 async def get_all_users(repository: UserRepository = Depends(UserRepository.get_instance)) -> list[Users]:
     return await repository.find_all()
+
+@router.get("/search")
+async def get_all_users(date: str, repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)) -> list[Users]:
+    return await repository.get_by_name(date)
+
 
 
 # поиск по id пользоватлей
@@ -57,21 +58,8 @@ async def update_user(user_id: str, user: UpdateUserModel, repository: UserRepos
     return db_user
 
 
-
 @router.get("/hello2/{name}")
 async def say_hello(name: str):
     return {"message": f"Hello {name}!"}
 
-# # Создаем экземпляр класса-сервиса MongoDB
-# message_service = MessageService(db_client, "test", "testuser")
-#
-# # Маршрут для сохранения сообщения
-# @router.post("/api/messages")
-# def create_message(message: Message):
-#     message_service.save_message(message)
-#     return {"message": "Message saved"}
-#
-# @router.get("/api/messages/{id}")
-# def find_create_message(id: str):
-#     return {message_service.find_message(id)}
-# print("hellow")
+

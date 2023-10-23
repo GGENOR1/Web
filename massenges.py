@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 class Users(BaseModel):
     id: str
+
     creationDate: str
 
 
