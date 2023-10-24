@@ -22,11 +22,11 @@ class UserSearchRepository:
     async def delete(self, user_id: str):
         await (self._elasticsearch_client.delete(index=self._elasticsearch_index, id=user_id))
 
-    async def get_by_name(self, date: str) -> list[Users]:
+    async def get_by_name(self, DisplayName: str) -> list[Users]:
         query = {
             "match": {
-                "CreationDate": {
-                    "query": date
+                "DisplayName": {
+                    "query": DisplayName
                 }
             }
         }
@@ -34,11 +34,16 @@ class UserSearchRepository:
         response = await self._elasticsearch_client.search(index=self._elasticsearch_index, query=query,
                                                            filter_path=["hits.hits._id", "hits.hits._source"])
         hits = response.body['hits']['hits']
-        user1 = list(map(lambda user: Users(id=user['_id'],Reputation=user['_source']['Reputation'], DisplayName=user['_source']['DisplayName'], CreationDate=user['_source']['CreationDate'], LastAccessDate=user['_source']['LastAccessDate'] ), hits))
+        user1 = list(map(lambda user: Users(
+            id=user['_id'],
+            Reputation=user['_source'].get('Reputation', "None"),
+            DisplayName=user['_source'].get('DisplayName', "None"),
+            CreationDate=user['_source'].get('CreationDate',  "None"),
+            LastAccessDate=user['_source'].get('LastAccessDate', "None"),
+            Location=user['_source'].get('Location', "None"),
+            AboutMe=user['_source'].get('AboutMe', "None")),
+                         hits))
         return user1
-
-
-
 
     @staticmethod
     def get_instance(elasticsearch_client: AsyncElasticsearch = Depends(get_elasticsearch_client)):

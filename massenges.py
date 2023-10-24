@@ -7,6 +7,8 @@ class Users(BaseModel):
     DisplayName: str
     CreationDate: str
     LastAccessDate:str
+    Location:str
+    AboutMe:str
     # accountId: str
 
 
@@ -15,6 +17,8 @@ class UpdateUserModel(BaseModel):
     DisplayName: str
     CreationDate: str
     LastAccessDate:str
+    Location:str
+    AboutMe:str
 
 
 

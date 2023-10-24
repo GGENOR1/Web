@@ -25,8 +25,8 @@ async def get_all_users(repository: UserRepository = Depends(UserRepository.get_
     return await repository.find_all()
 
 @router.get("/search")
-async def get_all_users(date: str, repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)) -> list[Users]:
-    return await repository.get_by_name(date)
+async def get_all_users(name: str, repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)) -> list[Users]:
+    return await repository.get_by_name(name)
 
 
 

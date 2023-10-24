@@ -9,7 +9,16 @@ from massenges import UpdateUserModel, Users
 
 
 def map_user(user: Any) -> Users:
-    return Users(id=str(user["_id"]), Reputation=str(user['Reputation']), DisplayName=str(user["DisplayName"]), CreationDate=str(user['CreationDate']), LastAccessDate=str(user['LastAccessDate']))
+    id = str(user.get("_id", ""))
+    Reputation = str(user.get("Reputation", 'None'))
+    DisplayName = str(user.get("DisplayName", 'None'))
+    CreationDate = str(user.get("CreationDate", 'None'))
+    LastAccessDate = str(user.get("LastAccessDate", 'None'))
+    Location = str(user.get("Location", 'None'))
+    AboutMe = str(user.get("AboutMe", 'None'))
+    return Users(id=id, Reputation=Reputation, DisplayName=DisplayName,
+                 CreationDate=CreationDate, LastAccessDate=LastAccessDate,Location=Location,AboutMe=AboutMe)
+    # return Users(id=id, Reputation=str(user['Reputation']), DisplayName=str(user["DisplayName"]), CreationDate=str(user['CreationDate']), LastAccessDate=str(user['LastAccessDate']))
 
 
 def get_filter(id: str) -> dict:
