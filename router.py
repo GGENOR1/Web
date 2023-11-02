@@ -3,6 +3,8 @@ from typing import Any
 from bson import ObjectId
 from fastapi import APIRouter, Depends, status
 from fastapi.openapi.models import Response
+
+from Message_Search_elastic import MessageSearchRepository
 from MessagesRepository import MessageRepository
 import MessagesRepository
 from MessangeClass import Messages, UpdateMessagesModel
@@ -27,9 +29,13 @@ message: list[Users] = []
 async def get_all_users(repository: UserRepository = Depends(UserRepository.get_instance)) -> list[Users]:
     return await repository.find_all()
 
+
+# приск по имени
 @router.get("/user/search")
-async def get_all_users(name: str, repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)) -> list[Users]:
+async def get_all_users(name: str, repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)) -> \
+list[Users]:
     return await repository.get_by_name(name)
+
 
 # поиск по id пользоватлей
 @router.get("/user/{user_id}", response_model=Users)
@@ -41,7 +47,7 @@ async def get_by_id(user_id: str, repository: UserRepository = Depends(UserRepos
         return Response(status_code=status.HTTP_404_NOT_FOUND)
     return db_user
 
-
+# добавление поользователя
 @router.post("/user")
 async def add_user(user: UpdateUserModel,
                    repository: UserRepository = Depends(UserRepository.get_instance),
@@ -49,7 +55,14 @@ async def add_user(user: UpdateUserModel,
     user_id = await repository.create(user)
     await search_repository.create(user_id, user)
     return user_id
-
+@router.post("/message")
+async def add_messages( message: UpdateMessagesModel,
+                       repository: MessageRepository = Depends(MessageRepository.get_instance),
+                       search_repository: MessageSearchRepository = Depends(MessageSearchRepository.get_instance)
+                       ) -> str:
+    mess_id = await repository.create_post(message)
+    await search_repository.create(mess_id, message)
+    return mess_id
 
 @router.put("/user/{user_id}", response_model=Users)
 async def update_user(user_id: str,
@@ -71,17 +84,6 @@ async def get_all_message(repository: MessageRepository = Depends(MessageReposit
     return await repository.find_all()
 
 
-@router.put("/message/{message_id}", response_model=Messages)
-async def update_message(message_id:str,
-                         message:UpdateMessagesModel,
-                         repository: MessageRepository = Depends(MessageRepository.get_instance)
-                         )-> Any:
-    if not ObjectId.is_valid(message_id):
-        return Response(status_code=status.HTTP_400_BAD_REQUEST)
-    db_mess = await repository.update_post(message_id, message)
-    if db_mess is None:
-        return Response(status_code=status.HTTP_404_NOT_FOUND)
-    return db_mess
 @router.get("/message/{message_id}", response_model=Messages)
 async def get_by_id(message_id: str,
                     repository: MessageRepository = Depends(MessageRepository.get_instance)) -> Any:
@@ -90,4 +92,22 @@ async def get_by_id(message_id: str,
     db_mess = await repository.find_mess_by_id(message_id)
     if db_mess is None:
         return Response(status_code=status.HTTP_404_NOT_FOUND)
+    return db_mess
+
+
+
+
+
+@router.put("/message/{message_id}", response_model=Messages)
+async def update_messages(message_id: str,
+                          message: UpdateMessagesModel,
+                          repository: MessageRepository = Depends(MessageRepository.get_instance),
+                          search_repository: MessageSearchRepository = Depends(MessageSearchRepository.get_instance)
+                          ) -> Any:
+    if not ObjectId.is_valid(message_id):
+        return Response(status_code=status.HTTP_400_BAD_REQUEST)
+    db_mess = await repository.update_post(message_id, message)
+    if db_mess is None:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
+    await search_repository.update(message_id, message)
     return db_mess

@@ -47,7 +47,9 @@ class UserRepository:
         db_users = []
         async for user in self._db_collection.find():
             db_users.append(map_user(user))
+            print(map_user(user))
         return db_users
+
 
     @staticmethod
     def get_instance(db_collection: AsyncIOMotorCollection = Depends(get_db_collections_user)):
