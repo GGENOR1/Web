@@ -35,7 +35,10 @@ async def get_all_users(repository: UserRepository = Depends(UserRepository.get_
 async def get_all_users(name: str, repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)) -> \
 list[Users]:
     return await repository.get_by_name(name)
-
+@router.get("/message/search")
+async def get_string(string: str, repository: MessageSearchRepository = Depends(MessageSearchRepository.get_instance)) -> \
+list[Messages]:
+    return await repository.get_by_Body(string)
 
 # поиск по id пользоватлей
 @router.get("/user/{user_id}", response_model=Users)
