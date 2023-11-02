@@ -2,7 +2,7 @@ from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from elasticsearch_utils import get_elasticsearch_client
-from massenges import Users, UpdateUserModel
+from UserClass import Users, UpdateUserModel
 
 
 class UserSearchRepository:

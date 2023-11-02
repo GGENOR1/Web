@@ -4,9 +4,14 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
 db_client: AsyncIOMotorClient = None
 
 
-async def get_db_collections() -> AsyncIOMotorCollection:
+async def get_db_collections_user() -> AsyncIOMotorCollection:
     db_name = "User"
     collections = "UserCollections"
+    return db_client[db_name][collections]
+
+async def get_db_collections_mess() -> AsyncIOMotorCollection:
+    db_name = "User"
+    collections = "Mess"
     return db_client[db_name][collections]
 
 async def connect_and_init_db():

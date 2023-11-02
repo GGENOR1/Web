@@ -4,8 +4,8 @@ from bson import ObjectId
 from fastapi import Depends
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from DBConnection import get_db_collections
-from massenges import UpdateUserModel, Users
+from DBConnection import get_db_collections_user
+from UserClass import UpdateUserModel, Users
 
 
 def map_user(user: Any) -> Users:
@@ -50,5 +50,5 @@ class UserRepository:
         return db_users
 
     @staticmethod
-    def get_instance(db_collection: AsyncIOMotorCollection = Depends(get_db_collections)):
+    def get_instance(db_collection: AsyncIOMotorCollection = Depends(get_db_collections_user)):
         return UserRepository(db_collection)

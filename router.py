@@ -3,9 +3,12 @@ from typing import Any
 from bson import ObjectId
 from fastapi import APIRouter, Depends, status
 from fastapi.openapi.models import Response
+from MessagesRepository import MessageRepository
+import MessagesRepository
+from MessangeClass import Messages
 from UserRepository import UserRepository
 from User_Search_elastic import UserSearchRepository
-from massenges import Users, UpdateUserModel
+from UserClass import Users, UpdateUserModel
 
 router = APIRouter()
 message: list[Users] = []
@@ -20,18 +23,16 @@ message: list[Users] = []
 
 
 # вывод всех пользователей
-@router.get("/")
+@router.get("/user")
 async def get_all_users(repository: UserRepository = Depends(UserRepository.get_instance)) -> list[Users]:
     return await repository.find_all()
 
-@router.get("/search")
+@router.get("/user/search")
 async def get_all_users(name: str, repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)) -> list[Users]:
     return await repository.get_by_name(name)
 
-
-
 # поиск по id пользоватлей
-@router.get("/{user_id}", response_model=Users)
+@router.get("/user/{user_id}", response_model=Users)
 async def get_by_id(user_id: str, repository: UserRepository = Depends(UserRepository.get_instance)) -> Any:
     if not ObjectId.is_valid(user_id):
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
@@ -41,7 +42,7 @@ async def get_by_id(user_id: str, repository: UserRepository = Depends(UserRepos
     return db_user
 
 
-@router.post("/")
+@router.post("/user")
 async def add_user(user: UpdateUserModel,
                    repository: UserRepository = Depends(UserRepository.get_instance),
                    search_repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)) -> str:
@@ -50,7 +51,7 @@ async def add_user(user: UpdateUserModel,
     return user_id
 
 
-@router.put("/{user_id}", response_model=Users)
+@router.put("/user/{user_id}", response_model=Users)
 async def update_user(user_id: str, user: UpdateUserModel,
                       repository: UserRepository = Depends(UserRepository.get_instance),
                       search_repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)
@@ -64,8 +65,6 @@ async def update_user(user_id: str, user: UpdateUserModel,
     return db_user
 
 
-@router.get("/hello2/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}!"}
-
-
+@router.get("/message")
+async def get_all_message(repository: MessageRepository = Depends(MessageRepository.get_instance)) -> list[Messages]:
+    return await repository.find_all()
