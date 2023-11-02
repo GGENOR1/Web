@@ -5,7 +5,7 @@ from fastapi import Depends
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from DBConnection import get_db_collections_mess
-from MessangeClass import Messages
+from MessangeClass import Messages, UpdateMessagesModel
 
 
 def map_messages(mess: Any) -> Messages:
@@ -51,6 +51,17 @@ class MessageRepository:
             db_mess.append(map_messages(mes))
         return db_mess
 
+    async def create_post(self, mess: UpdateMessagesModel) -> str:
+        insert_post = await self._db_collection.insert_one(dict(mess))
+        return str(insert_post.inserted_id)
+
+    async def update_post(self, mess_id: str, mess: UpdateMessagesModel) -> Any:
+        db_post = await self._db_collection.find_one_and_replace(get_filter(mess_id), dict(mess))
+        return map_messages(db_post)
+
+    async def find_mess_by_id(self, mess_id: str) -> Any:
+        db_post = await self._db_collection.find_one(get_filter(mess_id))
+        return map_messages(db_post)
 
     @staticmethod
     def get_instance(db_collection: AsyncIOMotorCollection = Depends(get_db_collections_mess)):

@@ -21,8 +21,18 @@ class Messages(BaseModel):
 
 
 class UpdateMessagesModel(BaseModel):
+    PostTypeId: str
+    AcceptedAnswerId: str
     CreationDate: str
+    Score: str
+    ViewCount: str
     Body: str
+    OwnerUserId: str
+    LastActivityDate: str
     Title: str
     Tags: str
+    AnswerCount: str
+    CommentCount: str
+    ContentLicense: str
+    LastEditorUserId: str
     LastEditDate: str

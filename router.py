@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi.openapi.models import Response
 from MessagesRepository import MessageRepository
 import MessagesRepository
-from MessangeClass import Messages
+from MessangeClass import Messages, UpdateMessagesModel
 from UserRepository import UserRepository
 from User_Search_elastic import UserSearchRepository
 from UserClass import Users, UpdateUserModel
@@ -52,7 +52,8 @@ async def add_user(user: UpdateUserModel,
 
 
 @router.put("/user/{user_id}", response_model=Users)
-async def update_user(user_id: str, user: UpdateUserModel,
+async def update_user(user_id: str,
+                      user: UpdateUserModel,
                       repository: UserRepository = Depends(UserRepository.get_instance),
                       search_repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)
                       ) -> Any:
@@ -68,3 +69,25 @@ async def update_user(user_id: str, user: UpdateUserModel,
 @router.get("/message")
 async def get_all_message(repository: MessageRepository = Depends(MessageRepository.get_instance)) -> list[Messages]:
     return await repository.find_all()
+
+
+@router.put("/message/{message_id}", response_model=Messages)
+async def update_message(message_id:str,
+                         message:UpdateMessagesModel,
+                         repository: MessageRepository = Depends(MessageRepository.get_instance)
+                         )-> Any:
+    if not ObjectId.is_valid(message_id):
+        return Response(status_code=status.HTTP_400_BAD_REQUEST)
+    db_mess = await repository.update_post(message_id, message)
+    if db_mess is None:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
+    return db_mess
+@router.get("/message/{message_id}", response_model=Messages)
+async def get_by_id(message_id: str,
+                    repository: MessageRepository = Depends(MessageRepository.get_instance)) -> Any:
+    if not ObjectId.is_valid(message_id):
+        return Response(status_code=status.HTTP_400_BAD_REQUEST)
+    db_mess = await repository.find_mess_by_id(message_id)
+    if db_mess is None:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
+    return db_mess
