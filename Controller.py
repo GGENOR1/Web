@@ -3,7 +3,7 @@ from elasticsearch_utils import connect_elasticsearch_and_init, close_connect_ES
 
 
 async def handle_startup():
-    await connect_elasticsearch_and_init()
+    # await connect_elasticsearch_and_init()
     await connect_and_init_db()
 
 

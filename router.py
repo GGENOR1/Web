@@ -64,7 +64,7 @@ async def add_messages( message: UpdateMessagesModel,
                        search_repository: MessageSearchRepository = Depends(MessageSearchRepository.get_instance)
                        ) -> str:
     mess_id = await repository.create_post(message)
-    await search_repository.create(mess_id, message)
+    # await search_repository.create(mess_id, message)
     return mess_id
 
 @router.put("/user/{user_id}", response_model=Users)

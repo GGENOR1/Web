@@ -9,22 +9,23 @@ from MessangeClass import Messages, UpdateMessagesModel
 
 
 def map_messages(mess: Any) -> Messages:
+
     id = str(mess.get("_id", ""))
-    PostTypeId = str(mess.get("PostTypeId", ''))
-    AcceptedAnswerId = str(mess.get("AcceptedAnswerId", ''))
-    CreationDate = str(mess.get("CreationDate", ''))
-    Score = str(mess.get("Score", ''))
-    ViewCount = str(mess.get("ViewCount", ''))
-    Body = str(mess.get("Body", ''))
-    OwnerUserId = str(mess.get("OwnerUserId", ''))
-    LastActivityDate = str(mess.get("LastActivityDate", ''))
-    Title = str(mess.get("Title", ''))
-    Tags = str(mess.get("Tags", ''))
-    AnswerCount = str(mess.get("AnswerCount", ''))
-    CommentCount = str(mess.get("CommentCount", ''))
-    ContentLicense = str(mess.get("ContentLicense", ''))
-    LastEditorUserId = str(mess.get("LastEditorUserId", ''))
-    LastEditDate = str(mess.get("LastEditDate", ''))
+    PostTypeId = (mess.get("PostTypeId", 0))
+    AcceptedAnswerId = (mess.get("AcceptedAnswerId", 0))
+    CreationDate = (mess.get("CreationDate", ''))
+    Score = (mess.get("Score", 0))
+    ViewCount = (mess.get("ViewCount", 0))
+    Body = (mess.get("Body", ''))
+    OwnerUserId = (mess.get("OwnerUserId",0))
+    LastActivityDate = (mess.get("LastActivityDate", ''))
+    Title = (mess.get("Title", ''))
+    Tags = (mess.get("Tags", ''))
+    AnswerCount = (mess.get("AnswerCount", 0))
+    CommentCount = (mess.get("CommentCount", 0))
+    ContentLicense = (mess.get("ContentLicense", ''))
+    LastEditorUserId = (mess.get("LastEditorUserId", 0))
+    LastEditDate = (mess.get("LastEditDate", ''))
     return Messages(id=id, PostTypeId=PostTypeId,
                     AcceptedAnswerId=AcceptedAnswerId,
                     CreationDate=CreationDate,

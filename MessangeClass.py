@@ -3,36 +3,36 @@ from pydantic import BaseModel
 
 class Messages(BaseModel):
     id: str
-    PostTypeId: str
-    AcceptedAnswerId: str
+    PostTypeId: int
+    AcceptedAnswerId: int
     CreationDate: str
-    Score: str
-    ViewCount: str
+    Score: int
+    ViewCount: int
     Body: str
-    OwnerUserId: str
+    OwnerUserId: int
     LastActivityDate: str
     Title: str
     Tags: str
-    AnswerCount: str
-    CommentCount: str
+    AnswerCount: int
+    CommentCount: int
     ContentLicense: str
-    LastEditorUserId: str
+    LastEditorUserId: int
     LastEditDate: str
 
 
 class UpdateMessagesModel(BaseModel):
-    PostTypeId: str
-    AcceptedAnswerId: str
+    PostTypeId: int
+    AcceptedAnswerId: int
     CreationDate: str
-    Score: str
-    ViewCount: str
+    Score: int
+    ViewCount: int
     Body: str
-    OwnerUserId: str
+    OwnerUserId: int
     LastActivityDate: str
     Title: str
     Tags: str
-    AnswerCount: str
-    CommentCount: str
+    AnswerCount: int
+    CommentCount: int
     ContentLicense: str
-    LastEditorUserId: str
+    LastEditorUserId: int
     LastEditDate: str
