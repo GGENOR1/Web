@@ -1,7 +1,56 @@
 from elasticsearch import AsyncElasticsearch
 
 elasticsearch_client: AsyncElasticsearch = None
-
+mapping = {
+    "PostTypeId": {
+        "type": "integer"
+    },
+    "AcceptedAnswerId": {
+        "type": "integer"
+    },
+    "CreationDate": {
+        "type": "date",
+        "format": "strict_date_optional_time"
+    },
+    "Score": {
+        "type": "integer"
+    },
+    "ViewCount": {
+        "type": "integer"
+    },
+    "Body": {
+        "type": "text"
+    },
+    "OwnerUserId": {
+        "type": "integer"
+    },
+    "LastActivityDate": {
+        "type": "date",
+        "format": "strict_date_optional_time"
+    },
+    "Title": {
+        "type": "text"
+    },
+    "Tags": {
+        "type": "text"
+    },
+    "AnswerCount": {
+        "type": "integer"
+    },
+    "CommentCount": {
+        "type": "integer"
+    },
+    "ContentLicense": {
+        "type": "text"
+    },
+    "LastEditorUserId": {
+        "type": "integer"
+    },
+    "LastEditDate": {
+        "type": "date",
+        "format": "strict_date_optional_time"
+    }
+}
 
 async def connect_elasticsearch_and_init():
     global elasticsearch_client
@@ -10,6 +59,7 @@ async def connect_elasticsearch_and_init():
         elasticsearch_client = AsyncElasticsearch(elasticsearch_url)
         await elasticsearch_client.info()
         print(f"Connection to ES with {elasticsearch_url}")
+
 
     except Exception as Ex:
         print(f"Cant connect to ES: {Ex}")

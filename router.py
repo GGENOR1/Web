@@ -35,10 +35,15 @@ async def get_all_users(repository: UserRepository = Depends(UserRepository.get_
 async def get_all_users(name: str, repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)) -> \
 list[Users]:
     return await repository.get_by_name(name)
-@router.get("/message/search")
+@router.get("/message/search/body")
 async def get_string(string: str, repository: MessageSearchRepository = Depends(MessageSearchRepository.get_instance)) -> \
 list[Messages]:
     return await repository.get_by_Body(string)
+
+@router.get("/message/search/datecreated")
+async def get_string(string: str, repository: MessageSearchRepository = Depends(MessageSearchRepository.get_instance)) -> \
+list[Messages]:
+    return await repository.get_by_date(string)
 
 # поиск по id пользоватлей
 @router.get("/user/{user_id}", response_model=Users)
@@ -64,7 +69,7 @@ async def add_messages( message: UpdateMessagesModel,
                        search_repository: MessageSearchRepository = Depends(MessageSearchRepository.get_instance)
                        ) -> str:
     mess_id = await repository.create_post(message)
-    # await search_repository.create(mess_id, message)
+    await search_repository.create(mess_id, message)
     return mess_id
 
 @router.put("/user/{user_id}", response_model=Users)
