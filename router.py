@@ -30,6 +30,8 @@ async def get_all_users(repository: UserRepository = Depends(UserRepository.get_
     return await repository.find_all()
 
 
+
+
 # приск по имени
 @router.get("/user/search")
 async def get_all_users(name: str, repository: UserSearchRepository = Depends(UserSearchRepository.get_instance)) -> \
@@ -86,8 +88,22 @@ async def update_user(user_id: str,
     await search_repository.update(user_id, user)
     return db_user
 
+##функция для синхронизации данных из mongodb в ES
+@router.get("/message/test")
+async def (repository: MessageRepository = Depends(MessageRepository.get_instance),
+                        search_repository: MessageSearchRepository
+                        = Depends(MessageSearchRepository.get_instance)
+                          ) -> list[Messages]:
+    message = await repository.find_all()
+    for mes in message:
+        post = await search_repository.test_find(mes.id)
+        if post:
+            await search_repository.update(mes.id, mes)
+        else:
+            await search_repository.create(mes.id, mes)
+    return message
 
-@router.get("/message")
+@router.get("/message/")
 async def get_all_message(repository: MessageRepository = Depends(MessageRepository.get_instance)) -> list[Messages]:
     return await repository.find_all()
 

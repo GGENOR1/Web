@@ -22,9 +22,6 @@ class MessageSearchRepository:
     async def update(self, mess_id: str, mess: UpdateMessagesModel):
         await self._elasticsearch_client.update(index=self._elasticsearch_index, id=mess_id, doc=dict(mess))
 
-    async def delete(self, mess_id: str):
-        await (self._elasticsearch_client.delete(index=self._elasticsearch_index, id=mess_id))
-
     async def get_by_Body(self, String: str) -> list[Messages]:
         exact_match_query = {
             "match": {
@@ -45,26 +42,28 @@ class MessageSearchRepository:
             }
         }
 
-        # query = {
-        #     "match": {
-        #         "Body": {
-        #             "query": String,
-        #             "minimum_should_match": "50%"
-        #         }
-        #     }
-        # }
-        # {
-        #     "query": {
-        #         "match": {
-        #             "Body": {"query": "afaf"}
-        #         }
-        #     }
-        # }
         response = await self._elasticsearch_client.search(index=self._elasticsearch_index, query=query,
                                                            filter_path=["hits.hits._id", "hits.hits._source"])
         hits = response.body['hits']['hits']
         message = list(map(MessageParams.convert, hits))
         return message
+
+
+    async def delete(self, mess_id: str):
+        await (self._elasticsearch_client.delete(index=self._elasticsearch_index, id=mess_id))
+
+    async def test_find(self, mess_id: str):
+       ex = await (self._elasticsearch_client.exists(index=self._elasticsearch_index, id=mess_id))
+       print(ex)
+       if ex:
+           print(f"Индекс {mess_id} существует")
+       else:
+           print(f"Индекс {mess_id} не существует")
+       return ex
+
+
+
+
 
     async def get_by_date(self, date: str) -> list[Messages]:
         query = {
