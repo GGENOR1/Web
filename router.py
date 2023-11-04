@@ -89,8 +89,8 @@ async def update_user(user_id: str,
     return db_user
 
 ##функция для синхронизации данных из mongodb в ES
-@router.get("/message/test")
-async def (repository: MessageRepository = Depends(MessageRepository.get_instance),
+@router.get("/message/synchronization")
+async def synchronization_Data(repository: MessageRepository = Depends(MessageRepository.get_instance),
                         search_repository: MessageSearchRepository
                         = Depends(MessageSearchRepository.get_instance)
                           ) -> list[Messages]:
