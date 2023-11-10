@@ -4,8 +4,8 @@ from bson import ObjectId
 from fastapi import Depends
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from DBConnection import get_db_collections_mess
-from MessangeClass import Messages, UpdateMessagesModel
+from Connection.DBConnection import get_db_collections_mess
+from Models.MessangeClass import Messages, UpdateMessagesModel
 
 
 def map_messages(mess: Any) -> Messages:
@@ -24,7 +24,7 @@ def map_messages(mess: Any) -> Messages:
     AnswerCount = (mess.get("AnswerCount", 0))
     CommentCount = (mess.get("CommentCount", 0))
     ContentLicense = (mess.get("ContentLicense", ''))
-    LastEditorUserId = (mess.get("LastEditorUserId", 0))
+    LastEditorUserId = (mess.get("LastEditorUserId", ''))
     LastEditDate = (mess.get("LastEditDate", ''))
     return Messages(id=id, PostTypeId=PostTypeId,
                     AcceptedAnswerId=AcceptedAnswerId,
@@ -62,6 +62,7 @@ class MessageRepository:
 
     async def find_mess_by_id(self, mess_id: str) -> Any:
         db_post = await self._db_collection.find_one(get_filter(mess_id))
+
         return map_messages(db_post)
 
     @staticmethod

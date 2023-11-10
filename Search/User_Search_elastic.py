@@ -1,8 +1,9 @@
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
+from SearchClass import MessageParams
 from elasticsearch_utils import get_elasticsearch_client
-from UserClass import Users, UpdateUserModel
+from Models.UserClass import Users, UpdateUserModel
 
 
 class UserSearchRepository:
@@ -21,7 +22,14 @@ class UserSearchRepository:
 
     async def delete(self, user_id: str):
         await (self._elasticsearch_client.delete(index=self._elasticsearch_index, id=user_id))
-
+    async def test_find(self, user_id: str):
+       ex = await (self._elasticsearch_client.exists(index=self._elasticsearch_index, id=user_id))
+       print(ex)
+       if ex:
+           print(f"Индекс {user_id} существует")
+       else:
+           print(f"Индекс {user_id} не существует")
+       return ex
     async def get_by_name(self, DisplayName: str) -> list[Users]:
         query = {
             "match": {
@@ -34,18 +42,10 @@ class UserSearchRepository:
         response = await self._elasticsearch_client.search(index=self._elasticsearch_index, query=query,
                                                            filter_path=["hits.hits._id", "hits.hits._source"])
         hits = response.body['hits']['hits']
-        user1 = list(map(lambda user: Users(
-            id=user['_id'],
-            Reputation=user['_source'].get('Reputation', "None"),
-            DisplayName=user['_source'].get('DisplayName', "None"),
-            CreationDate=user['_source'].get('CreationDate',  "None"),
-            LastAccessDate=user['_source'].get('LastAccessDate', "None"),
-            Location=user['_source'].get('Location', "None"),
-            AboutMe=user['_source'].get('AboutMe', "None")),
-                         hits))
+        user1 =list(map(MessageParams.convertUser, hits))
         return user1
 
     @staticmethod
     def get_instance(elasticsearch_client: AsyncElasticsearch = Depends(get_elasticsearch_client)):
-        elasticsearch_index = "users"
+        elasticsearch_index = "users2"
         return UserSearchRepository(elasticsearch_index, elasticsearch_client)

@@ -1,3 +1,5 @@
+import os
+
 import motor
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
 
@@ -16,12 +18,14 @@ async def get_db_collections_mess() -> AsyncIOMotorCollection:
 
 async def connect_and_init_db():
     global db_client
-    mongo_url = "mongodb://localhost:27017/"
+    mongo_url = os.getenv('MONGO_URI')
     try:
         db_client = AsyncIOMotorClient(mongo_url)
         print("Successful connection")
+        print(mongo_url)
     except Exception as ex:
         print(f"Cant connection {ex}")
+        print(mongo_url)
 
 
 async def close_connect():

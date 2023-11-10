@@ -4,20 +4,37 @@ from bson import ObjectId
 from fastapi import Depends
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from DBConnection import get_db_collections_user
-from UserClass import UpdateUserModel, Users
+from Connection.DBConnection import get_db_collections_user
+from Models.UserClass import UpdateUserModel, Users
 
 
 def map_user(user: Any) -> Users:
     id = str(user.get("_id", ""))
-    Reputation = str(user.get("Reputation", 'None'))
-    DisplayName = str(user.get("DisplayName", 'None'))
-    CreationDate = str(user.get("CreationDate", 'None'))
-    LastAccessDate = str(user.get("LastAccessDate", 'None'))
-    Location = str(user.get("Location", 'None'))
-    AboutMe = str(user.get("AboutMe", 'None'))
-    return Users(id=id, Reputation=Reputation, DisplayName=DisplayName,
-                 CreationDate=CreationDate, LastAccessDate=LastAccessDate,Location=Location,AboutMe=AboutMe)
+    Reputation = user.get("Reputation", 0)
+    CreationDate = user.get("CreationDate", 'None')
+    DisplayName = user.get("DisplayName", 'None')
+    LastAccessDate = user.get("LastAccessDate", 'None')
+    WebsiteUrl = user.get("WebsiteUrl", 'None')
+    Location = user.get("Location", 'None')
+    AboutMe = user.get("AboutMe", 'None')
+    Views = user.get("Views", 0)
+    UpVotes = user.get("UpVotes", 0)
+    DownVotes = user.get("DownVotes", 0)
+    AccountId = user.get("AboutMe", 'None')
+    return Users(
+        Id=id,
+        Reputation=Reputation,
+        CreationDate=CreationDate,
+        DisplayName=DisplayName,
+        LastAccessDate=LastAccessDate,
+        WebsiteUrl=WebsiteUrl,
+        Location=Location,
+        AboutMe=AboutMe,
+        Views=Views,
+        UpVotes=UpVotes,
+        DownVotes=DownVotes,
+        AccountId=AccountId
+    )
     # return Users(id=id, Reputation=str(user['Reputation']), DisplayName=str(user["DisplayName"]), CreationDate=str(user['CreationDate']), LastAccessDate=str(user['LastAccessDate']))
 
 
@@ -40,6 +57,7 @@ class UserRepository:
         return map_user(db_student)
 
     async def get_user_by_id(self, user_id: str) -> Any:
+        print("User get from MongoDB")
         db_student = await self._db_collection.find_one(get_filter(user_id))
         return map_user(db_student)
 
@@ -47,9 +65,7 @@ class UserRepository:
         db_users = []
         async for user in self._db_collection.find():
             db_users.append(map_user(user))
-            print(map_user(user))
         return db_users
-
 
     @staticmethod
     def get_instance(db_collection: AsyncIOMotorCollection = Depends(get_db_collections_user)):

@@ -1,3 +1,5 @@
+import os
+
 from elasticsearch import AsyncElasticsearch
 
 elasticsearch_client: AsyncElasticsearch = None
@@ -55,6 +57,7 @@ mapping = {
 async def connect_elasticsearch_and_init():
     global elasticsearch_client
     elasticsearch_url = "http://localhost:9200"
+    print(os.getenv('ELASTICSEARCH_URI'))
     try:
         elasticsearch_client = AsyncElasticsearch(elasticsearch_url)
         await elasticsearch_client.info()
@@ -62,7 +65,10 @@ async def connect_elasticsearch_and_init():
 
 
     except Exception as Ex:
+        print(elasticsearch_url)
         print(f"Cant connect to ES: {Ex}")
+
+
 
 
 async def close_connect_ES():

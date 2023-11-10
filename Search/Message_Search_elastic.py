@@ -1,7 +1,9 @@
 from elasticsearch import AsyncElasticsearch
-from fastapi import Depends
 
-from MessangeClass import UpdateMessagesModel, Messages
+from fastapi import Depends, status
+from starlette.responses import JSONResponse
+
+from Models.MessangeClass import UpdateMessagesModel, Messages
 from SearchClass import MessageParams
 from elasticsearch_utils import get_elasticsearch_client
 
@@ -44,6 +46,7 @@ class MessageSearchRepository:
 
         response = await self._elasticsearch_client.search(index=self._elasticsearch_index, query=query,
                                                            filter_path=["hits.hits._id", "hits.hits._source"])
+        if not response: JSONResponse(content = {'status' : 'Not Found'}, status_code=status.HTTP_404_NOT_FOUND)
         hits = response.body['hits']['hits']
         message = list(map(MessageParams.convert, hits))
         return message
@@ -65,17 +68,20 @@ class MessageSearchRepository:
 
 
 
-    async def get_by_date(self, date: str) -> list[Messages]:
+    async def get_by_date(self, date1:str="2010-01-12", date2:str="now/d") -> list[Messages]:
         query = {
             "range": {
                 "CreationDate": {
-                    "gte": date,
-                    "lte": "now/d"
+                    "gte": date1,
+                    "lte": date2
                 }
             }
         }
+
+
         response = await self._elasticsearch_client.search(index=self._elasticsearch_index, query=query,
                                                            filter_path=["hits.hits._id", "hits.hits._source"])
+        if not response: return JSONResponse(content = {'status' : 'Not Found'}, status_code=status.HTTP_404_NOT_FOUND)
         hits = response.body['hits']['hits']
         message = list(map(MessageParams.convert, hits))
         return message
