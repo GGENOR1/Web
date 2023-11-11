@@ -108,8 +108,6 @@ async def synchronization_Data(
                                = Depends(MessageSearchRepository.get_instance)
                                ) -> list[Messages]:
     message = await repository.find_all()
-
-
     for mes in message:
         mes_without_id = {key: value for key, value in mes.dict().items() if key != 'id'}
         post = await search_repository.test_find(mes.id)
