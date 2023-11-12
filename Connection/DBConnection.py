@@ -2,19 +2,22 @@ import os
 
 import motor
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
-
+from dotenv import load_dotenv
+load_dotenv()
 db_client: AsyncIOMotorClient = None
-
+print(str(os.getenv("MONGO_DB")))
 
 async def get_db_collections_user() -> AsyncIOMotorCollection:
-    db_name = "User"
-    collections = "UserCollections"
-    return db_client[db_name][collections]
+    mongo_db = (os.getenv('MONGO_DB'))
+    mongo_collection = (os.getenv('MONGO_COLLECTION_USER'))
+    print(mongo_collection)
+    return db_client[mongo_db][mongo_collection]
 
 async def get_db_collections_mess() -> AsyncIOMotorCollection:
-    db_name = "User"
-    collections = "Mess"
-    return db_client[db_name][collections]
+    mongo_db = os.getenv('MONGO_DB')
+    mongo_collection = os.getenv('MONGO_COLLECTION_MESSAGE')
+    print (mongo_collection)
+    return db_client[mongo_db][mongo_collection]
 
 async def connect_and_init_db():
     global db_client

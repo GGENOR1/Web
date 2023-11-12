@@ -1,7 +1,8 @@
 import os
 
 from elasticsearch import AsyncElasticsearch
-
+from dotenv import load_dotenv
+load_dotenv()
 elasticsearch_client: AsyncElasticsearch = None
 mapping = {
     "PostTypeId": {
@@ -56,12 +57,12 @@ mapping = {
 
 async def connect_elasticsearch_and_init():
     global elasticsearch_client
-    elasticsearch_url = "http://localhost:9200"
+    elasticsearch_url = os.getenv('ELASTICSEARCH_URI')
     print(os.getenv('ELASTICSEARCH_URI'))
     try:
         elasticsearch_client = AsyncElasticsearch(elasticsearch_url)
         await elasticsearch_client.info()
-        print(f"Connection to ES with {elasticsearch_url}")
+
 
 
     except Exception as Ex:
