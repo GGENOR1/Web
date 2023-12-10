@@ -58,17 +58,16 @@ class MessageSearchRepository:
     async def test_find(self, mess_id: str):
        ex = await (self._elasticsearch_client.exists(index=self._elasticsearch_index, id=mess_id))
        print(ex)
-       if ex:
+       if ex is None:
            print(f"Индекс {mess_id} существует")
-       else:
-           print(f"Индекс {mess_id} не существует")
+           return False
        return ex
 
 
 
 
 
-    async def get_by_date(self, date1:str="2010-01-12", date2:str="now/d") -> list[Messages]:
+    async def get_by_date(self, date1:str="2010-01-12", date2:str="now/d",size:int = 1) -> list[Messages]:
         query = {
             "range": {
                 "CreationDate": {
@@ -78,12 +77,24 @@ class MessageSearchRepository:
             }
         }
 
+        # Добавляем параметр "size" в запрос
+        search_body = {
+            "size": size,  # Указываем желаемое количество элементов
+            "query": query
+        }
 
-        response = await self._elasticsearch_client.search(index=self._elasticsearch_index, query=query,
-                                                           filter_path=["hits.hits._id", "hits.hits._source"])
-        if not response: return JSONResponse(content = {'status' : 'Not Found'}, status_code=status.HTTP_404_NOT_FOUND)
+        response = await self._elasticsearch_client.search(
+            index=self._elasticsearch_index,
+            body=search_body,  # Используем измененный запрос
+            filter_path=["hits.hits._id", "hits.hits._source"]
+        )
+        if not response:
+            return JSONResponse(content={'status': 'Not Found'}, status_code=status.HTTP_404_NOT_FOUND)
+
         hits = response.body['hits']['hits']
+        print(hits)
         message = list(map(MessageParams.convert, hits))
+
         return message
 
     @staticmethod

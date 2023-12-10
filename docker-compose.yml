@@ -1,54 +1,415 @@
+
+volumes:
+  esdata01:
+    driver: local
+  esdata02:
+    driver: local
+  esdata03:
+    driver: local
+  kibanadata:
+      driver: local
+
+
+networks:
+  mongocluster:
+    driver: bridge
+
 services:
   api:
     build: .
     ports:
       - 8000:8000
     environment:
-      - MONGO_URI=mongodb://mongo_db:27017
-      - ELASTICSEARCH_URI=http://elasticsearch_db:9200
-      - MEMCACHED_URI=memcached_node_01:11211,memcached_node_02:11211,memcached_node_03:11211
+      - ELASTICSEARCH_URI=http://es01:9200
+      - MONGO_URI=mongodb://mongo_db_node_01,mongo_db_node_02,mongo_db_node_03/?replicaSet=docker-replicaset
+      - REDIS_URL = redis://redis_cluster:7000
     depends_on:
-      elasticsearch_db:
-        condition: service_healthy
-      mongo_db:
-        condition: service_started
+      - es01
+      - es02
+      - es03
+      - mongo_db_node_01
+      - mongo_db_node_02
+      - mongo_db_node_03
+      - redis_cluster
 
-  mongo_db:
-    image: mongo:7.0.2
+
+
+  mongo_cluster_init:
+    image: mongo
+    depends_on:
+      - mongo_db_node_01
+      - mongo_db_node_02
+      - mongo_db_node_03
     volumes:
-      - ./data/mongo:/data/db
-    ports:
-      - 27017:27017
+      - ./enviroment/init-mongo.js:/scripts/init-mongo.js:ro
+    entrypoint:
+      [
+        "mongosh",
+        "--host",
+        "mongo_db_node_01",
+        "--file",
+        "/scripts/init-mongo.js"
+      ]
 
-  elasticsearch_db:
-    image: elasticsearch:8.10.2
-    healthcheck:
-      interval: 5s
-      retries: 80
-      test: curl --write-out 'HTTP %{http_code}' --fail --silent --output /dev/null http://elasticsearch_db:9200
+  mongo_db_node_01:
+    image: mongo
+    volumes:
+      - ./data/mongo_node_01:/data/db
+    command: mongod --replSet docker-replicaset
+
+  mongo_db_node_02:
+    image: mongo
+    volumes:
+      - ./data/mongo_node_02:/data/db
+    command: mongod --replSet docker-replicaset
+
+  mongo_db_node_03:
+    image: mongo
+    volumes:
+      - ./data/mongo_node_03:/data/db
+    command: mongod --replSet docker-replicaset
+
+
+  es01:
+    image: elasticsearch:${STACK_VERSION}
+    volumes:
+      - esdata01:/usr/share/elasticsearch/data
+    ports:
+      - ${ES_PORT}:9200
     environment:
+      - node.name=es01
+      - cluster.name=${CLUSTER_NAME}
+      - cluster.initial_master_nodes=es01,es02,es03
+      - discovery.seed_hosts=es02,es03
+      - bootstrap.memory_lock=true
       - xpack.security.enabled=false
-      - discovery.type=single-node
-    volumes:
-      - ./data/elasticsearch:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    mem_limit: ${MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
 
-  memcached_node_01:
-    image: memcached
+  es02:
+      depends_on:
+        - es01
+      image: elasticsearch:${STACK_VERSION}
+      volumes:
+        - esdata02:/usr/share/elasticsearch/data
+      environment:
+        - node.name=es02
+        - cluster.name=${CLUSTER_NAME}
+        - cluster.initial_master_nodes=es01,es02,es03
+        - discovery.seed_hosts=es01,es03
+        - bootstrap.memory_lock=true
+        - xpack.security.enabled=false
+        - xpack.security.http.ssl.enabled=false
+        - xpack.security.transport.ssl.enabled=false
+      mem_limit: ${MEM_LIMIT}
+      ulimits:
+        memlock:
+          soft: -1
+          hard: -1
 
-  memcached_node_02:
-    image: memcached
-
-  memcached_node_03:
-    image: memcached
-
+  es03:
+      depends_on:
+        - es02
+      image: elasticsearch:${STACK_VERSION}
+      volumes:
+        - esdata03:/usr/share/elasticsearch/data
+      environment:
+        - node.name=es03
+        - cluster.name=${CLUSTER_NAME}
+        - cluster.initial_master_nodes=es01,es02,es03
+        - discovery.seed_hosts=es01,es02
+        - bootstrap.memory_lock=true
+        - xpack.security.enabled=false
+        - xpack.security.http.ssl.enabled=false
+        - xpack.security.transport.ssl.enabled=false
+      mem_limit: ${MEM_LIMIT}
+      ulimits:
+        memlock:
+          soft: -1
+          hard: -1
 
   kibana:
-    image: kibana:8.11.0
-    environment:
-      - ELASTICSEARCH_URI=http://elasticsearch_db:9200
-    ports:
-      - 5601:5601
-    depends_on:
-      - elasticsearch_db
+      image: kibana:${STACK_VERSION}
+      volumes:
+        - kibanadata:/usr/share/kibana/data
+      ports:
+        - ${KIBANA_PORT}:5601
+      environment:
+        - SERVERNAME=kibana
+        - ELASTICSEARCH_HOSTS=http://es01:9200
+        - ELASTICSEARCH_USERNAME=kibana_system
+        - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      mem_limit: ${MEM_LIMIT}
+  redis_insight:
+      image: redislabs/redisinsight:latest
+      ports:
+      - 8001:8001
+
+  redis_cluster:
+     image: grokzen/redis-cluster:6.2.0
+     ports:
+      - 7000-7005:7000-7005
+
+
+#  redis-cluster:
+#    image: redis:latest
+#    command: redis-cli -p 7001 --cluster create 10.0.0.11:7001 10.0.0.12:7002 10.0.0.13:7003 10.0.0.14:7004 10.0.0.15:7005 10.0.0.16:7006 --cluster-replicas 1 --cluster-yes
+#    depends_on:
+#      - redis-1
+#      - redis-2
+#      - redis-3
+#      - redis-4
+#      - redis-5
+#      - redis-6
+#    networks:
+#      redisnet:
+#        ipv4_address: 10.0.0.2
+#
+#  redis-1:
+#    build: ./testredis/docker-redis-cluster/redis
+#    image: redis-cluster-node
+#    environment:
+#      X_REDIS_PORT: 7001
+#    networks:
+#      redisnet:
+#        ipv4_address: 10.0.0.11
+#    ports:
+#      - 7001:6379
+#
+#  redis-2:
+#    image: redis-cluster-node
+#    environment:
+#      X_REDIS_PORT: 7002
+#    networks:
+#      redisnet:
+#        ipv4_address: 10.0.0.12
+#    ports:
+#      - 7002:6379
+#
+#  redis-3:
+#    image: redis-cluster-node
+#    environment:
+#      X_REDIS_PORT: 7003
+#    networks:
+#      redisnet:
+#        ipv4_address: 10.0.0.13
+#    ports:
+#      - 7003:6379
+#
+#  redis-4:
+#    image: redis-cluster-node
+#    environment:
+#      X_REDIS_PORT: 7004
+#    networks:
+#      redisnet:
+#        ipv4_address: 10.0.0.14
+#    ports:
+#      - 7004:6379
+#
+#  redis-5:
+#    image: redis-cluster-node
+#    environment:
+#      X_REDIS_PORT: 7005
+#    networks:
+#      redisnet:
+#        ipv4_address: 10.0.0.15
+#    ports:
+#      - 7005:6379
+#
+#  redis-6:
+#    image: redis-cluster-node
+#    environment:
+#      X_REDIS_PORT: 7006
+#    networks:
+#      redisnet:
+#        ipv4_address: 10.0.0.16
+#    ports:
+#      - 7006:6379
+#
+#volumes:
+#  esdata01:
+#    driver: local
+#  esdata02:
+#    driver: local
+#  esdata03:
+#    driver: local
+#  kibanadata:
+#      driver: local
+#
+#
+#networks:
+#  mongocluster:
+#    driver: bridge
+#  redisnet:
+#    driver: bridge
+#    ipam:
+#      config:
+#        - subnet: 10.0.0.0/16
+
+
+
+
+#
+#  memcached_node_01:
+#    image: memcached
+#
+#  memcached_node_02:
+#    image: memcached
+#
+#  memcached_node_03:
+#    image: memcached
+#
+#
+#  kibana:
+#    image: kibana:8.11.0
+#    environment:
+#      - ELASTICSEARCH_URI=http://elasticsearch_db:9200
+#    ports:
+#      - 5601:5601
+#    depends_on:
+#      - elasticsearch_db
+
+
+#version: '3'
+#
+#networks:
+#  redis-cluster-compose:
+#    driver: bridge
+#
+#services:
+#  redis-node-1:
+#    image: redis:latest
+#    ports:
+#      - 7000:7000
+#    networks:
+#      - redis-cluster-compose
+#    hostname: redis-node-1
+#    volumes:
+#      - C:/Users/Ruslan/Desktop/redis-config/7000:/redis
+#    command: redis-server /redis/redis.conf
+#  redis-node-2:
+#    image: redis:latest
+#    ports:
+#      - 7001:7001
+#    networks:
+#      - redis-cluster-compose
+#    hostname: redis-node-2
+#    volumes:
+#      - C:/Users/Ruslan/Desktop/redis-config/7001:/redis
+#    command: redis-server /redis/redis.conf
+#
+#  redis-node-3:
+#    image: redis:latest
+#    ports:
+#      - 7002:7002
+#    networks:
+#      - redis-cluster-compose
+#    hostname: redis-node-3
+#    volumes:
+#      - C:/Users/Ruslan/Desktop/redis-config/7002:/redis
+#    command: redis-server /redis/redis.conf
+#
+#  redis-node-4:
+#    image: redis:latest
+#    ports:
+#      - 7003:7003
+#    networks:
+#      - redis-cluster-compose
+#    hostname: redis-node-4
+#    volumes:
+#      - C:/Users/Ruslan/Desktop/redis-config/7003:/redis
+#    command: redis-server /redis/redis.conf
+#
+#  redis-node-5:
+#    image: redis:latest
+#    ports:
+#      - 7004:7004
+#    networks:
+#      - redis-cluster-compose
+#    hostname: redis-node-5
+#    volumes:
+#      - C:/Users/Ruslan/Desktop/redis-config/7004:/redis
+#    command: redis-server /redis/redis.conf
+#
+#  redis-node-6:
+#    image: redis:latest
+#    ports:
+#      - 7005:7005
+#    networks:
+#      - redis-cluster-compose
+#    hostname: redis-node-6
+#    volumes:
+#      - C:/Users/Ruslan/Desktop/redis-config/7005:/redis
+#    command: redis-server /redis/redis.conf
+#
+#  redis-cluster-creator:
+#    image: redis:latest
+#    ports:
+#      - 6999:6999
+#    networks:
+#      - redis-cluster-compose
+#    command: redis-cli -p 7000 --cluster create redis-node-1:7000 redis-node-2:7001 redis-node-3:7002 redis-node-4:7003 redis-node-5:7004 redis-node-6:7005 --cluster-replicas 1 --cluster-yes
+#    depends_on:
+#      - redis-node-1
+#      - redis-node-2
+#      - redis-node-3
+#      - redis-node-4
+#      - redis-node-5
+#      - redis-node-6
+#
+#  redis-insight:
+#    image: redislabs/redisinsight
+#    ports:
+#      - 8001:8001
+#    networks:
+#      - redis-cluster-compose
+#    volumes:
+#      - ./redisinsight:/db
+#    depends_on:
+#      - redis-cluster-creator
+
+
+
+
+
+
+#services:
+#  fix-redis-volume-ownership: # This service is to authorise redis-master with ownership permissions
+#    image: 'bitnami/redis:latest'
+#    user: root
+#    command: chown -R 1001:1001 /bitnami
+#    volumes:
+#      - ./data/redis:/bitnami
+#      - ./data/redis/conf/redis.conf:/opt/bitnami/redis/conf/redis.conf
+#
+#  redis-master: # Setting up master node
+#    image: 'bitnami/redis:latest'
+#    ports:
+#      - '6329:6390' # Port 6329 will be exposed to handle connections from outside server
+#    environment:
+#      - REDIS_REPLICATION_MODE=master # Assigning the node as a master
+#      - ALLOW_EMPTY_PASSWORD=yes # No password authentication required/ provide password if needed
+#    volumes:
+#      - ./data/redis:/bitnami # Redis master data volume
+#      - ./data/redis/conf/redis.conf:/opt/bitnami/redis/conf/redis.conf # Redis master configuration volume
+#
+#
+#  redis-replica: # Setting up slave node
+#    image: 'bitnami/redis:latest'
+#    ports:
+#      - '6390' # No port is exposed
+#    depends_on:
+#      - redis-master # will only start after the master has booted completely
+#    environment:
+#      - REDIS_REPLICATION_MODE=slave # Assigning the node as slave
+#      - REDIS_MASTER_HOST=redis-master # Host for the slave node is the redis-master node
+#      - REDIS_MASTER_PORT_NUMBER=6379 # Port number for local
+#      - ALLOW_EMPTY_PASSWORD=yes # No password required to connect to node
+
+
+
