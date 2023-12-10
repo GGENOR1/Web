@@ -1,5 +1,7 @@
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
+from starlette import status
+from starlette.responses import JSONResponse
 
 from SearchClass import MessageParams
 from elasticsearch_utils import get_elasticsearch_client
@@ -31,21 +33,37 @@ class UserSearchRepository:
            print(f"Индекс {user_id} не существует")
        return ex
     async def get_by_name(self, DisplayName: str) -> list[Users]:
-        query = {
+        exact_match_query = {
             "match": {
-                "DisplayName": {
-                    "query": DisplayName
+                "DisplayName": DisplayName
                 }
+            }
+        fuzzy_match_query = {
+            "fuzzy": {
+                "DisplayName": {
+                    "value": DisplayName,
+                    "fuzziness": "AUTO"
+                }
+            }
+        }
+        query = {
+            "bool": {
+                "should": [exact_match_query, fuzzy_match_query]
             }
         }
 
         response = await self._elasticsearch_client.search(index=self._elasticsearch_index, query=query,
                                                            filter_path=["hits.hits._id", "hits.hits._source"])
+        if not response: return JSONResponse(content={'status': 'Not Found'}, status_code=status.HTTP_404_NOT_FOUND)
         hits = response.body['hits']['hits']
+
+
+        print(hits)
         user1 =list(map(MessageParams.convertUser, hits))
+
         return user1
 
     @staticmethod
     def get_instance(elasticsearch_client: AsyncElasticsearch = Depends(get_elasticsearch_client)):
-        elasticsearch_index = "users2"
+        elasticsearch_index = "users3"
         return UserSearchRepository(elasticsearch_index, elasticsearch_client)
