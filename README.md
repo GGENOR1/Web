@@ -107,37 +107,37 @@ end
     end
 
     Client->>API: Запрос на получение всех пользователей
-    API-->>MongoDB: Запрос данных пользователей
+    API->>MongoDB: Запрос данных пользователей
     MongoDB->>MongoDB: Чтение всех данных
-    MongoDB-->>API: Получение результатов
-    API-->>Client: Отдача результатов
+    MongoDB->>API: Получение результатов
+    API->>Client: Отдача результатов
 
     Client->>API: Поиск по имени 
     API->>Elastic: Передача аргумента
     Elastic->>Elastic: Поиск записей
     Elastic ->> API: Получение результатов
-    API-->>Client: Отдача результатов
+    API->>Client: Отдача результатов
 
     Client->>API: Поиск пользователя по ID
     API->>Redis: Запрос данных
     Redis->>Redis: Поиск записей
     alt Найдено
         Redis->>API: Получение результатов
-        API-->>Client: Отдача результатов
+        API->>Client: Отдача результатов
     else Не найдено
-        Redis-->>API: Ничего не найдено
+        Redis->>API: Ничего не найдено
         API->>MongoDB: Запрос данных
         MongoDB->>MongoDB: Поиск записей
-        MongoDB-->>Redis: Запрос на кэширование
+        MongoDB->>Redis: Запрос на кэширование
         MongoDB->>API: Получение результатов
         API->>Client: Отдача результатов
     end
 
     Client->>API: Добавление пользователя
-    API-->>MongoDB: Передача данных
+    API->>MongoDB: Передача данных
     MongoDB->>MongoDB: Добавление данных
     MongoDB->>API: Получение результатов
-    API-->>ElasticSearch: Передача данных
+    API->>ElasticSearch: Передача данных
     ElasticSearch->>ElasticSearch: Добавление данных
     ElasticSearch->>API: Получение результатов
     API->>Client: Отдача результатов
@@ -167,7 +167,7 @@ end
 else Блокировка не найдена
     Redis->>API: Получение результатов
 end
-API-->>Client: Отдача результатов
+API->>Client: Отдача результатов
 
 ```
 
@@ -185,22 +185,22 @@ end
     end
 
     Client->>API: Запрос на получение всех постов
-    API-->>MongoDB: Запрос данных постов
+    API->>MongoDB: Запрос данных постов
     MongoDB->>MongoDB: Чтение всех данных
-    MongoDB-->>API: Получение результатов
-    API-->>Client: Отдача результатов
+    MongoDB->>API: Получение результатов
+    API->>Client: Отдача результатов
 
     Client->>API: Поиск по содержанию поста 
     API->>Elastic: Передача аргумента
     Elastic->>Elastic: Поиск записей
     Elastic ->> API: Получение результатов
-    API-->>Client: Отдача результатов
+    API->>Client: Отдача результатов
 
     Client->>API: Поиск по дате поста 
     API->>Elastic: Передача аргумента
     Elastic->>Elastic: Поиск записей
     Elastic ->> API: Получение результатов
-    API-->>Client: Отдача результатов
+    API->>Client: Отдача результатов
 
     Client->>API: Поиск поста по ID
         API->>MongoDB: Запрос данных
@@ -209,10 +209,10 @@ end
         API->>Client: Отдача результатов
 
     Client->>API: Добавление поста
-    API-->>MongoDB: Передача данных
+    API->>MongoDB: Передача данных
     MongoDB->>MongoDB: Добавление данных
     MongoDB->>API: Получение результатов
-    API-->>ElasticSearch: Передача данных
+    API->>ElasticSearch: Передача данных
     ElasticSearch->>ElasticSearch: Добавление данных
     ElasticSearch->>API: Получение результатов
     API->>Client: Отдача результатов
@@ -227,7 +227,7 @@ end
        ElasticSearch->>ElasticSearch: Поиск записи
        ElasticSearch->>ElasticSearch: Обновление записи
        ElasticSearch->>API: Получение результатов
-API-->>Client: Отдача результатов
+API->>Client: Отдача результатов
 
 
 
