@@ -101,7 +101,7 @@ box
     participant API
 end
     box Stack
-        participant Elastic 
+        participant ElasticSearch 
         participant MongoDB
         participant Redis
     end
@@ -113,9 +113,9 @@ end
     API->>Client: Отдача результатов
 
     Client->>API: Поиск по имени 
-    API->>Elastic: Передача аргумента
-    Elastic->>Elastic: Поиск записей
-    Elastic ->> API: Получение результатов
+    API->>ElasticSearch: Передача аргумента
+    ElasticSearch->>ElasticSearch: Поиск записей
+    ElasticSearch ->> API: Получение результатов
     API->>Client: Отдача результатов
 
     Client->>API: Поиск пользователя по ID
@@ -180,7 +180,7 @@ box
     participant API
 end
     box Stack
-        participant Elastic 
+        participant ElasticSearch 
         participant MongoDB
     end
 
@@ -191,15 +191,15 @@ end
     API->>Client: Отдача результатов
 
     Client->>API: Поиск по содержанию поста 
-    API->>Elastic: Передача аргумента
-    Elastic->>Elastic: Поиск записей
-    Elastic ->> API: Получение результатов
+    API->>ElasticSearch: Передача аргумента
+    ElasticSearch->>ElasticSearch: Поиск записей
+    ElasticSearch ->> API: Получение результатов
     API->>Client: Отдача результатов
 
     Client->>API: Поиск по дате поста 
-    API->>Elastic: Передача аргумента
-    Elastic->>Elastic: Поиск записей
-    Elastic ->> API: Получение результатов
+    API->>ElasticSearch: Передача аргумента
+    ElasticSearch->>ElasticSearch: Поиск записей
+    ElasticSearch ->> API: Получение результатов
     API->>Client: Отдача результатов
 
     Client->>API: Поиск поста по ID
