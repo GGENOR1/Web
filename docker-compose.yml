@@ -20,7 +20,7 @@ services:
     ports:
       - 8000:8000
     environment:
-      - ELASTICSEARCH_URI=http://es01:9200
+      - ELASTICSEARCH_URI=http://es01:9200,http://es02:9200,http://es03:9200
       - MONGO_URI=mongodb://mongo_db_node_01,mongo_db_node_02,mongo_db_node_03/?replicaSet=docker-replicaset
       - REDIS_URL = redis://redis_cluster:7000
     depends_on:
@@ -75,7 +75,7 @@ services:
     volumes:
       - esdata01:/usr/share/elasticsearch/data
     ports:
-      - ${ES_PORT}:9200
+      - 9200:9200
     environment:
       - node.name=es01
       - cluster.name=${CLUSTER_NAME}
@@ -95,6 +95,8 @@ services:
       depends_on:
         - es01
       image: elasticsearch:${STACK_VERSION}
+      ports:
+        - 9201:9200
       volumes:
         - esdata02:/usr/share/elasticsearch/data
       environment:
@@ -116,6 +118,8 @@ services:
       depends_on:
         - es02
       image: elasticsearch:${STACK_VERSION}
+      ports:
+        - 9202:9200
       volumes:
         - esdata03:/usr/share/elasticsearch/data
       environment:
@@ -141,7 +145,7 @@ services:
         - ${KIBANA_PORT}:5601
       environment:
         - SERVERNAME=kibana
-        - ELASTICSEARCH_HOSTS=http://es01:9200
+        - ELASTICSEARCH_HOSTS=["http://es01:9200","http://es02:9200","http://es03:9200"]
         - ELASTICSEARCH_USERNAME=kibana_system
         - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
       mem_limit: ${MEM_LIMIT}

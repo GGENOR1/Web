@@ -24,7 +24,9 @@ class MessageSearchRepository:
     async def update(self, mess_id: str, mess: UpdateMessagesModel):
         await self._elasticsearch_client.update(index=self._elasticsearch_index, id=mess_id, doc=dict(mess))
 
-    async def get_by_Body(self, String: str) -> list[Messages]:
+    async def get_by_Body(self, String: str, page:int, page_size: int) -> list[Messages]:
+
+        offset = (page - 1) * page_size
         exact_match_query = {
             "match": {
                 "Body": String
@@ -39,14 +41,19 @@ class MessageSearchRepository:
             }
         }
         query = {
+
             "bool": {
                 "should": [exact_match_query, fuzzy_match_query]
             }
         }
 
+
+
         response = await self._elasticsearch_client.search(index=self._elasticsearch_index, query=query,
-                                                           filter_path=["hits.hits._id", "hits.hits._source"])
-        if not response: JSONResponse(content = {'status' : 'Not Found'}, status_code=status.HTTP_404_NOT_FOUND)
+                                                           filter_path=["hits.hits._id", "hits.hits._source"],
+                                                           from_=offset,
+                                                            size=page_size)
+        if not response: return JSONResponse(content = {'status' : 'Not Found'}, status_code=status.HTTP_404_NOT_FOUND)
         hits = response.body['hits']['hits']
         message = list(map(MessageParams.convert, hits))
         return message
@@ -64,10 +71,8 @@ class MessageSearchRepository:
        return ex
 
 
-
-
-
-    async def get_by_date(self, date1:str="2010-01-12", date2:str="now/d",size:int = 1) -> list[Messages]:
+    async def get_by_date(self, date1:str="2010-01-12", date2:str="now/d",size:int = 1, page:int=1) -> list[Messages]:
+        offset = (page - 1) * size
         query = {
             "range": {
                 "CreationDate": {
@@ -77,16 +82,14 @@ class MessageSearchRepository:
             }
         }
 
-        # Добавляем параметр "size" в запрос
-        search_body = {
-            "size": size,  # Указываем желаемое количество элементов
-            "query": query
-        }
+
 
         response = await self._elasticsearch_client.search(
             index=self._elasticsearch_index,
-            body=search_body,  # Используем измененный запрос
-            filter_path=["hits.hits._id", "hits.hits._source"]
+            query=query,
+            filter_path=["hits.hits._id", "hits.hits._source"],
+            from_=offset,
+            size=size,  # Используем измененный запрос
         )
         if not response:
             return JSONResponse(content={'status': 'Not Found'}, status_code=status.HTTP_404_NOT_FOUND)

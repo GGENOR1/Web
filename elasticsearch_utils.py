@@ -60,7 +60,7 @@ async def connect_elasticsearch_and_init():
     elasticsearch_url = os.getenv('ELASTICSEARCH_URI')
     print(os.getenv('ELASTICSEARCH_URI'))
     try:
-        elasticsearch_client = AsyncElasticsearch(elasticsearch_url)
+        elasticsearch_client = AsyncElasticsearch(elasticsearch_url.split(","))
         await elasticsearch_client.info()
 
 
