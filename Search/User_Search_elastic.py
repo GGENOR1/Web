@@ -32,7 +32,8 @@ class UserSearchRepository:
        else:
            print(f"Индекс {user_id} не существует")
        return ex
-    async def get_by_name(self, DisplayName: str) -> list[Users]:
+    async def get_by_name(self, DisplayName: str,size:int, page:int) -> list[Users]:
+        offset = (page - 1) * size
         exact_match_query = {
             "match": {
                 "DisplayName": DisplayName
@@ -53,7 +54,8 @@ class UserSearchRepository:
         }
 
         response = await self._elasticsearch_client.search(index=self._elasticsearch_index, query=query,
-                                                           filter_path=["hits.hits._id", "hits.hits._source"])
+                                                           filter_path=["hits.hits._id", "hits.hits._source"],
+                                                           from_=offset, size=size)
         if not response: return JSONResponse(content={'status': 'Not Found'}, status_code=status.HTTP_404_NOT_FOUND)
         hits = response.body['hits']['hits']
 
