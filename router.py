@@ -128,14 +128,11 @@ async def update_user(user_id: str,
         user_dict = user.__dict__
         user_dict["id"] = user_id
         print(f"а кэшируется {json.dumps(user_dict)}")
-
         await redis_manager.setex(cache_key, 60, json.dumps(user_dict))
         return JSONResponse(content={'status': 'HTTP_200_OK'}, status_code=status.HTTP_200_OK)
-
     finally:
-
-
-        print("Блокировка снята")
+        if lock_acquired:
+            await redis_manager.unlock_cache(lock_key)
 
 
 

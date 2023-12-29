@@ -99,6 +99,13 @@ class RedisManager:
             print(f"Failed to get value from Redis: {e}")
             return None
 
+    async def unlock_cache(self, key):
+        try:
+            value = await self.redis.delete(key)
+            return value
+        except Exception as e:
+            print(f"Failed to delete key: {e}")
+            return None
     async def set(self, key, value):
         try:
             await self.redis.set(key, value)
